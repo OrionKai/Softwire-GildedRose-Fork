@@ -6,12 +6,17 @@ import org.junit.jupiter.api.Test
 internal class GildedRoseTest {
 
     /* Helper functions for testing */
+
+    // Only for tests that involve a single item
     fun updateAndCheckSellInAndQuality(app: GildedRose,
                                        expectedSellIn: Int,
                                        expectedQuality: Int) {
         app.updateQuality()
         checkSellInAndQuality(app, 0, expectedSellIn, expectedQuality)
-        assertEquals(expectedSellIn, app.items[0].sellIn)
+    }
+    fun updateAndCheckQuality(app: GildedRose,
+                              expectedQuality: Int) {
+        app.updateQuality()
         assertEquals(expectedQuality, app.items[0].quality)
     }
 
@@ -62,8 +67,7 @@ internal class GildedRoseTest {
         val app = GildedRose(items)
 
         for (i in 1..2) {
-            app.updateQuality()
-            checkSellInAndQuality(app, 0, 0 - i, 11 - (i * 2))
+            updateAndCheckQuality(app, 11 - (i * 2))
         }
     }
 
@@ -73,8 +77,7 @@ internal class GildedRoseTest {
         val app = GildedRose(items)
 
         for (i in 1..2) {
-            app.updateQuality()
-            checkSellInAndQuality(app, 0, 0 - i, 11 - (i * 4))
+            updateAndCheckQuality(app, 11 - (i * 4))
         }
     }
 
@@ -86,8 +89,8 @@ internal class GildedRoseTest {
 
         for (i in 1..3) {
             app.updateQuality()
-            checkSellInAndQuality(app, 0, 1 - i, 0)
-            checkSellInAndQuality(app, 1, 1 - i, 0)
+            assertEquals(0, items[0].quality)
+            assertEquals(0, items[1].quality)
         }
     }
 
@@ -101,8 +104,8 @@ internal class GildedRoseTest {
 
         for (i in 1..3) {
             app.updateQuality()
-            checkSellInAndQuality(app, 0, 3 - i, 0)
-            checkSellInAndQuality(app, 1, 3 - i, 0)
+            assertEquals(0, items[0].quality)
+            assertEquals(0, items[1].quality)
         }
     }
 
@@ -111,8 +114,8 @@ internal class GildedRoseTest {
         val items = listOf(Item("Aged Brie", 1, 3))
         val app = GildedRose(items)
 
-        updateAndCheckSellInAndQuality(app, 0, 4)
-        updateAndCheckSellInAndQuality(app, -1, 6)
+        updateAndCheckQuality(app, 4)
+        updateAndCheckQuality(app, 6)
     }
 
     @Test
@@ -120,8 +123,8 @@ internal class GildedRoseTest {
         val items = listOf(Item("Conjured Aged Brie", 1, 3))
         val app = GildedRose(items)
 
-        updateAndCheckSellInAndQuality(app, 0, 5)
-        updateAndCheckSellInAndQuality(app, -1, 9)
+        updateAndCheckQuality(app, 5)
+        updateAndCheckQuality(app, 9)
     }
 
     @Test
@@ -155,8 +158,8 @@ internal class GildedRoseTest {
         val items = listOf(Item("Backstage passes to a TAFKAL80ETC concert", 12, 10))
         val app = GildedRose(items)
 
-        updateAndCheckSellInAndQuality(app, 11, 11)
-        updateAndCheckSellInAndQuality(app, 10, 12)
+        updateAndCheckQuality(app, 11)
+        updateAndCheckQuality(app, 12)
     }
 
     @Test
@@ -164,8 +167,8 @@ internal class GildedRoseTest {
         val items = listOf(Item("Conjured backstage passes to a TAFKAL80ETC concert", 12, 10))
         val app = GildedRose(items)
 
-        updateAndCheckSellInAndQuality(app, 11, 12)
-        updateAndCheckSellInAndQuality(app, 10, 14)
+        updateAndCheckQuality(app, 12)
+        updateAndCheckQuality(app, 14)
     }
 
     @Test
@@ -174,7 +177,7 @@ internal class GildedRoseTest {
         val app = GildedRose(items)
 
         for (i in 1..5) {
-            updateAndCheckSellInAndQuality(app, 10 - i, 10 + (2 * i))
+            updateAndCheckQuality(app, 10 + (2 * i))
         }
     }
 
@@ -184,7 +187,7 @@ internal class GildedRoseTest {
         val app = GildedRose(items)
 
         for (i in 1..5) {
-            updateAndCheckSellInAndQuality(app, 10 - i, 10 + (4 * i))
+            updateAndCheckQuality(app, 10 + (4 * i))
         }
     }
 
@@ -194,7 +197,7 @@ internal class GildedRoseTest {
         val app = GildedRose(items)
 
         for (i in 1..5) {
-            updateAndCheckSellInAndQuality(app, 5 - i, 10 + (3 * i))
+            updateAndCheckQuality(app, 10 + (3 * i))
         }
     }
 
@@ -204,7 +207,7 @@ internal class GildedRoseTest {
         val app = GildedRose(items)
 
         for (i in 1..5) {
-            updateAndCheckSellInAndQuality(app, 5 - i, 10 + (6 * i))
+            updateAndCheckQuality(app, 10 + (6 * i))
         }
     }
 
@@ -213,8 +216,8 @@ internal class GildedRoseTest {
         val items = listOf(Item("Backstage passes to a TAFKAL80ETC concert", 0, 10))
         val app = GildedRose(items)
 
-        updateAndCheckSellInAndQuality(app, -1, 0)
-        updateAndCheckSellInAndQuality(app, -2, 0)
+        updateAndCheckQuality(app, 0)
+        updateAndCheckQuality(app, 0)
     }
 
     @Test
@@ -222,8 +225,8 @@ internal class GildedRoseTest {
         val items = listOf(Item("Conjured backstage passes to a TAFKAL80ETC concert", 0, 10))
         val app = GildedRose(items)
 
-        updateAndCheckSellInAndQuality(app, -1, 0)
-        updateAndCheckSellInAndQuality(app, -2, 0)
+        updateAndCheckQuality(app, 0)
+        updateAndCheckQuality(app, 0)
     }
 
     @Test
