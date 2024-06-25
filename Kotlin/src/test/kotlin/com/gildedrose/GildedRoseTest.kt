@@ -24,22 +24,36 @@ internal class GildedRoseTest {
     }
 
     @Test
-    fun testItemSellInAndQualityDegrades() {
+    fun testItemSellInDegrades() {
         val items = listOf(Item("Thunderfury", 2, 11))
         val app = GildedRose(items)
 
-        updateAndCheckSellInAndQuality(app, 1, 10)
-        updateAndCheckSellInAndQuality(app, 0, 9)
+        for (i in 1..3) {
+            app.updateQuality()
+            assertEquals(2 - i, app.items[0].sellIn)
+        }
+    }
 
-//        app.updateQuality()
-//        assertEquals(1, app.items[0].sellIn)
-//        assertEquals(10, app.items[0].quality)
-//
-//        /* Possible edge case; check that item quality doesn't degrade
-//        twice as fast already when sellIn has just degraded to 0 */
-//        app.updateQuality()
-//        assertEquals(0, app.items[0].sellIn)
-//        assertEquals(9, app.items[0].quality)
+    @Test
+    fun testItemQualityDegrades() {
+        val items = listOf(Item("Thunderfury", 2, 11))
+        val app = GildedRose(items)
+
+        for (i in 1..2) {
+            app.updateQuality()
+            assertEquals(11 - i, app.items[0].quality)
+        }
+    }
+
+    @Test
+    fun testConjuredItemQualityDegradesTwice() {
+        val items = listOf(Item("Conjured Thunderfury", 2, 11))
+        val app = GildedRose(items)
+
+        for (i in 1..2) {
+            app.updateQuality()
+            assertEquals(11 - (i * 2), app.items[0].quality)
+        }
     }
 
     @Test
@@ -47,30 +61,49 @@ internal class GildedRoseTest {
         val items = listOf(Item("Lembas", 0, 11))
         val app = GildedRose(items)
 
-        updateAndCheckSellInAndQuality(app, -1, 9)
-        updateAndCheckSellInAndQuality(app, -2, 7)
+        for (i in 1..2) {
+            app.updateQuality()
+            checkSellInAndQuality(app, 0, 0 - i, 11 - (i * 2))
+        }
+    }
+
+    @Test
+    fun testConjuredItemDegradesQuadrupleAfterSellIn() {
+        val items = listOf(Item("Conjured Lembas", 0, 11))
+        val app = GildedRose(items)
+
+        for (i in 1..2) {
+            app.updateQuality()
+            checkSellInAndQuality(app, 0, 0 - i, 11 - (i * 4))
+        }
     }
 
     @Test
     fun testQualityNeverNegativeForExpired() {
-        val items = listOf(Item("Expired Lembas", 1, 1))
+        val items = listOf(Item("Expired Lembas", 1, 1),
+            Item("Conjured Expired Lembas", 1, 1))
         val app = GildedRose(items)
 
-        updateAndCheckSellInAndQuality(app, 0, 0)
-        updateAndCheckSellInAndQuality(app, -1, 0)
-        updateAndCheckSellInAndQuality(app, -2, 0)
+        for (i in 1..3) {
+            app.updateQuality()
+            checkSellInAndQuality(app, 0, 1 - i, 0)
+            checkSellInAndQuality(app, 1, 1 - i, 0)
+        }
     }
 
     @Test
     fun testQualityNeverNegativeForNonExpired() {
         /* Check possible edge case for item whose quality reaches
         0 before sellIn does */
-        val items = listOf(Item("Expired Lembas", 3, 1))
+        val items = listOf(Item("Stale Lembas", 3, 1),
+            Item("Conjured Expired Lembas", 3, 1))
         val app = GildedRose(items)
 
-        updateAndCheckSellInAndQuality(app, 2, 0)
-        updateAndCheckSellInAndQuality(app, 1, 0)
-        updateAndCheckSellInAndQuality(app, 0, 0)
+        for (i in 1..3) {
+            app.updateQuality()
+            checkSellInAndQuality(app, 0, 3 - i, 0)
+            checkSellInAndQuality(app, 1, 3 - i, 0)
+        }
     }
 
     @Test
@@ -83,8 +116,25 @@ internal class GildedRoseTest {
     }
 
     @Test
+    fun testConjuredAgedBrieIncreasesQuality() {
+        val items = listOf(Item("Conjured Aged Brie", 1, 3))
+        val app = GildedRose(items)
+
+        updateAndCheckSellInAndQuality(app, 0, 5)
+        updateAndCheckSellInAndQuality(app, -1, 9)
+    }
+
+    @Test
     fun testSulfurasDoesNotDegrade() {
         val items = listOf(Item("Sulfuras, Hand of Ragnaros", 80, 80))
+        val app = GildedRose(items)
+
+        updateAndCheckSellInAndQuality(app, 80, 80)
+    }
+
+    @Test
+    fun testConjuredSulfurasDoesNotDegrade() {
+        val items = listOf(Item("Conjured Sulfuras, Hand of Ragnaros", 80, 80))
         val app = GildedRose(items)
 
         updateAndCheckSellInAndQuality(app, 80, 80)
@@ -110,12 +160,31 @@ internal class GildedRoseTest {
     }
 
     @Test
+    fun testConjuredBackstagePassIncreasesQualityBeforeTenDaysLeft() {
+        val items = listOf(Item("Conjured backstage passes to a TAFKAL80ETC concert", 12, 10))
+        val app = GildedRose(items)
+
+        updateAndCheckSellInAndQuality(app, 11, 12)
+        updateAndCheckSellInAndQuality(app, 10, 14)
+    }
+
+    @Test
     fun testBackstagePassIncreasesQualityAfterTenDaysLeftBeforeFiveDaysLeft() {
         val items = listOf(Item("Backstage passes to a TAFKAL80ETC concert", 10, 10))
         val app = GildedRose(items)
 
         for (i in 1..5) {
             updateAndCheckSellInAndQuality(app, 10 - i, 10 + (2 * i))
+        }
+    }
+
+    @Test
+    fun testConjuredBackstagePassIncreasesQualityAfterTenDaysLeftBeforeFiveDaysLeft() {
+        val items = listOf(Item("Conjured backstage passes to a TAFKAL80ETC concert", 10, 10))
+        val app = GildedRose(items)
+
+        for (i in 1..5) {
+            updateAndCheckSellInAndQuality(app, 10 - i, 10 + (4 * i))
         }
     }
 
@@ -130,8 +199,27 @@ internal class GildedRoseTest {
     }
 
     @Test
+    fun testConjuredBackstagePassIncreasesQualityAfterFiveDaysLeftBeforeConcert() {
+        val items = listOf(Item("Conjured backstage passes to a TAFKAL80ETC concert", 5, 10))
+        val app = GildedRose(items)
+
+        for (i in 1..5) {
+            updateAndCheckSellInAndQuality(app, 5 - i, 10 + (6 * i))
+        }
+    }
+
+    @Test
     fun testBackstagePassQualityZeroAfterConcert() {
         val items = listOf(Item("Backstage passes to a TAFKAL80ETC concert", 0, 10))
+        val app = GildedRose(items)
+
+        updateAndCheckSellInAndQuality(app, -1, 0)
+        updateAndCheckSellInAndQuality(app, -2, 0)
+    }
+
+    @Test
+    fun testConjuredBackstagePassQualityZeroAfterConcert() {
+        val items = listOf(Item("Conjured backstage passes to a TAFKAL80ETC concert", 0, 10))
         val app = GildedRose(items)
 
         updateAndCheckSellInAndQuality(app, -1, 0)
@@ -142,10 +230,15 @@ internal class GildedRoseTest {
     fun testItemQualityMaxFifty() {
         // Have one item for each possible way of increasing quality
         val items = listOf(Item("Backstage passes to a TAFKAL80ETC concert", 15, 49),
+            Item("Conjured backstage passes to a TAFKAL80ETC concert", 15, 49),
             Item("Backstage passes to a TAFKAL80ETC concert", 9, 49),
+            Item("Conjured backstage passes to a TAFKAL80ETC concert", 9, 49),
             Item("Backstage passes to a TAFKAL80ETC concert", 4, 49),
+            Item("Conjured backstage passes to a TAFKAL80ETC concert", 4, 49),
             Item("Aged Brie", 5, 49),
-            Item("Aged Brie", 0, 49)
+            Item("Conjured Aged Brie", 5, 49),
+            Item("Aged Brie", 0, 49),
+            Item("Conjured Aged Brie", 0, 49)
         )
 
         val app = GildedRose(items)
